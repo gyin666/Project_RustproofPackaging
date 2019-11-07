@@ -7,8 +7,8 @@
     <ProjectGuid>{91836A45-191D-48E3-B9FE-BCA83A4CAF2F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FXBZ_ProdAndMarketOpt</RootNamespace>
-    <AssemblyName>FXBZ_ProdAndMarketOpt</AssemblyName>
+    <RootNamespace>GYIN.K3.FXBZ.PROCANDSALEOUTSTOCK.App</RootNamespace>
+    <AssemblyName>GYIN.K3.FXBZ.PROCANDSALEOUTSTOCK.App</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

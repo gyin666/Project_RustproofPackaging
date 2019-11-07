@@ -1,4 +1,4 @@
-﻿using GYIN.K3.FXBZ.PROCANDSALEOUTSTOCK.App.ParamOption;
+﻿
 using GYIN.K3.FXBZ.PROCANDSALEOUTSTOCK.Contracts;
 using Kingdee.BOS;
 using Kingdee.BOS.Core.DynamicForm;
