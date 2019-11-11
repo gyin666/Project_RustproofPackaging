@@ -34,10 +34,6 @@ namespace VNRX.FXBZ.BarCodeSplitBill.OperationPlugIn
             base.OnPreparePropertys(e);
             e.FieldKeys.Add("FEntity");
             e.FieldKeys.Add("FEntryBarCode");
-            e.FieldKeys.Add("FEntity");
-            e.FieldKeys.Add("FEntity");
-            e.FieldKeys.Add("FEntity");
-            e.FieldKeys.Add("FEntity");
         }
 
         public override void EndOperationTransaction(EndOperationTransactionArgs e)
@@ -69,9 +65,9 @@ namespace VNRX.FXBZ.BarCodeSplitBill.OperationPlugIn
 
                                 // 获取当前明细行物料的条形码，并根据条形码查询条码主档获取该物料的公斤数量
                                 String barCode = Convert.ToString(obj1["FEntryBarCode"]);
-                                StringBuilder tmpSQl1 = new StringBuilder();
-                                tmpSQl1.AppendFormat(@"/*dialect*/ SELECT * FROM T_BD_BARCODEMAIN WHERE FBARCODE = '{0}' ", barCode);
-                                DynamicObjectCollection col1 = DBUtils.ExecuteDynamicObject(this.Context, tmpSQl1.ToString());
+                                StringBuilder tmpSQL1 = new StringBuilder();
+                                tmpSQL1.AppendFormat(@"/*dialect*/ SELECT * FROM T_BD_BARCODEMAIN WHERE FBARCODE = '{0}' ", barCode);
+                                DynamicObjectCollection col1 = DBUtils.ExecuteDynamicObject(this.Context, tmpSQL1.ToString());
 
                                 if (col1 != null && col1.Count > 0)
                                 {
@@ -79,52 +75,56 @@ namespace VNRX.FXBZ.BarCodeSplitBill.OperationPlugIn
                                     double realWeight = Convert.ToDouble(col1[0]["FQTY"]);
 
                                     // 获得物料编码
-                                    String materialId = Convert.ToString(col1[0]["FMATERIALID"]);
-
-                                    StringBuilder tmpSQL2 = new StringBuilder();
-                                    tmpSQL2.AppendFormat(@"/*dialect*/ SELECT * FROM T_BD_UNITCONVERTRATE UC LEFT JOIN T_BD_UNIT_L UL ON UL.FUNITID = UC.FCURRENTUNITID WHERE FMATERIALID = '{0}' ", materialId);
-                                    DynamicObjectCollection col2 = DBUtils.ExecuteDynamicObject(this.Context, tmpSQL2.ToString());
-                                    if (col2 != null && col2.Count > 0)
+                                    DynamicObject materialObj = col1[0]["FMATERIALID"] as DynamicObject;
+                                    if (materialObj != null)
                                     {
-                                        // 遍历当前物料的标准称重单位（公斤）与其他称重单位的转换参数
-                                        foreach (DynamicObject obj2 in col2)
+                                        String materialId = Convert.ToString(materialObj["Id"]);
+                                        
+                                        StringBuilder tmpSQL2 = new StringBuilder();
+                                        tmpSQL2.AppendFormat(@"/*dialect*/ SELECT * FROM T_BD_UNITCONVERTRATE UC LEFT JOIN T_BD_UNIT_L UL ON UL.FUNITID = UC.FCURRENTUNITID WHERE FMATERIALID = '{0}' ", materialId);
+                                        DynamicObjectCollection col2 = DBUtils.ExecuteDynamicObject(this.Context, tmpSQL2.ToString());
+                                        if (col2 != null && col2.Count > 0)
                                         {
-                                            // 目标称重单位数量
-                                            double rate1 = Convert.ToDouble(obj2["FCONVERTDENOMINATOR"]);
-                                            // 公斤称重单位数量
-                                            double rate2 = Convert.ToDouble(obj2["FCONVERTNUMERATOR"]);
-
-                                            // 计算公斤数量转换为各个称重单位的数值
-                                            double realOtherWeight = (realWeight / rate1) * rate2;
-
-                                            StringBuilder tmpSQL3 = new StringBuilder();
-                                            String where = "";
-                                            switch (Convert.ToString(obj2["FNAME"]))
+                                            // 遍历当前物料的标准称重单位（公斤）与其他称重单位的转换参数
+                                            foreach (DynamicObject obj2 in col2)
                                             {
-                                                case "平方米":
-                                                    where = "F_QSNC_M2NUM";
-                                                    break;
-                                                case "张":
-                                                    where = "F_QSNC_ZHANGNUM";
-                                                    break;
-                                                case "个":
-                                                    where = "F_QSNC_GENUM";
-                                                    break;
-                                                case "箱":
-                                                    where = "F_QSNC_XIANGNUM";
-                                                    break;
-                                                case "件":
-                                                    where = "F_QSNC_JIANNUM";
-                                                    break;
-                                                default:
-                                                    break;
+                                                // 目标称重单位数量
+                                                double rate1 = Convert.ToDouble(obj2["FCONVERTDENOMINATOR"]);
+                                                // 公斤称重单位数量
+                                                double rate2 = Convert.ToDouble(obj2["FCONVERTNUMERATOR"]);
+
+                                                // 计算公斤数量转换为各个称重单位的数值
+                                                double realOtherWeight = (realWeight / rate1) * rate2;
+
+                                                StringBuilder tmpSQL3 = new StringBuilder();
+                                                String where = "";
+                                                switch (Convert.ToString(obj2["FNAME"]))
+                                                {
+                                                    case "平方米":
+                                                        where = "F_QSNC_M2NUM";
+                                                        break;
+                                                    case "张":
+                                                        where = "F_QSNC_ZHANGNUM";
+                                                        break;
+                                                    case "个":
+                                                        where = "F_QSNC_GENUM";
+                                                        break;
+                                                    case "箱":
+                                                        where = "F_QSNC_XIANGNUM";
+                                                        break;
+                                                    case "件":
+                                                        where = "F_QSNC_JIANNUM";
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+
+                                                if (!String.IsNullOrWhiteSpace(where))
+                                                {
+                                                    tmpSQL3.AppendFormat(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET {0} = {1} WHERE FENTRYID = {2} ", where, realOtherWeight, entryId);
+                                                    DBUtils.Execute(this.Context, tmpSQL3.ToString());
+                                                }
                                             }
-
-                                            if (!String.IsNullOrWhiteSpace(where))
-                                            {
-                                                tmpSQL3.AppendFormat(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET {0} = {1} WHERE FENTRYID = {2} ", where, realOtherWeight, entryId);
-                                                DBUtils.Execute(this.Context, tmpSQL3.ToString());
-                                            } 
                                         }
                                     }
                                 }
