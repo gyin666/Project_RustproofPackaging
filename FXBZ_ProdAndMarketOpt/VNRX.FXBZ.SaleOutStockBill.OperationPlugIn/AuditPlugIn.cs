@@ -34,7 +34,11 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
             base.OnPreparePropertys(e);
             // 包装单号
             e.FieldKeys.Add("F_QSNC_PackageNum");
+
+            // 单据体对象
             e.FieldKeys.Add("FEntity");
+
+            // 物料编码
             e.FieldKeys.Add("FMaterialID");
         }
 
@@ -48,17 +52,16 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                 {
                     foreach (DynamicObject item in e.DataEntitys)
                     {
-                        // 获取销售出库单单据头包装单号
-                        String packageNo = Convert.ToString(item["F_QSNC_PackageNum"]);
+                        // 获取销售出库单明细
+                        DynamicObjectCollection outEntry = item["SAL_OUTSTOCKENTRY"] as DynamicObjectCollection;
 
-                        if (!String.IsNullOrWhiteSpace(packageNo))
+                        if (outEntry != null && outEntry.Count > 0)
                         {
-                            // 获取销售出库单明细
-                            DynamicObjectCollection outEntry = item["SAL_OUTSTOCKENTRY"] as DynamicObjectCollection;
-
-                            if (outEntry != null && outEntry.Count > 0)
+                            foreach (DynamicObject obj1 in outEntry)
                             {
-                                foreach (DynamicObject obj1 in outEntry)
+                                //获取当前明细行包装单号
+                                String packageNo = Convert.ToString(obj1["F_QSNC_PackageNum"]);
+                                if (!String.IsNullOrWhiteSpace(packageNo))
                                 {
                                     // 获取当前明细行物料的id
                                     DynamicObject materialObj = obj1["MaterialID"] as DynamicObject;
@@ -75,7 +78,7 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                                         double jianNum = Convert.ToDouble(obj1["F_QSNC_JianNum"]);
 
                                         // 若包装单号不为空，则查找相同包装单号的条码拆装单
-                                        String tmpSQL1 = String.Format(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_QSNC_REALM2NUM = {0}, F_QSNC_REALZHANGNUM = {1}, F_QSNC_REALGENUM = {2}, F_QSNC_REALXIANGNUM = {3}, F_QSNC_REALJIANNUM = {4} WHERE FID = (SELECT FID FROM t_UN_Packaging WHERE FPACKAGING = '{5}') AND FITEMID = {6} ", m2Num, zhangNum, geNum, xiangNum, jianNum, packageNo, materialId);
+                                        String tmpSQL1 = String.Format(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_QSNC_REALM2NUM = F_QSNC_REALM2NUM + {0}, F_QSNC_REALZHANGNUM = F_QSNC_REALZHANGNUM + {1}, F_QSNC_REALGENUM = F_QSNC_REALGENUM + {2}, F_QSNC_REALXIANGNUM = F_QSNC_REALXIANGNUM + {3}, F_QSNC_REALJIANNUM = F_QSNC_REALJIANNUM + {4} WHERE FID = (SELECT FID FROM t_UN_Packaging WHERE FPACKAGING = '{5}') AND FITEMID = {6} ", m2Num, zhangNum, geNum, xiangNum, jianNum, packageNo, materialId);
                                         DBUtils.Execute(this.Context, tmpSQL1.ToString());
                                     }
                                 }

@@ -94,7 +94,7 @@ namespace VNRX.FXBZ.BarCodeSplitBill.OperationPlugIn
                                                 double rate2 = Convert.ToDouble(obj2["FCONVERTNUMERATOR"]);
 
                                                 // 计算公斤数量转换为各个称重单位的数值
-                                                double realOtherWeight = (realWeight / rate1) * rate2;
+                                                double realOtherWeight = (realWeight / rate2) * rate1;
 
                                                 StringBuilder tmpSQL3 = new StringBuilder();
                                                 String where = "";
