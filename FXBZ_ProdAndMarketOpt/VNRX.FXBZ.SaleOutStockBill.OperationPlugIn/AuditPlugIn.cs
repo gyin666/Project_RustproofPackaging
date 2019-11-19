@@ -26,14 +26,14 @@ using Kingdee.BOS.Util;
 
 namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
 {
-    [Description("条码拆装单保存时换算并赋值")]
+    [Description("销售出库单审核时反写上游条码拆装单中实出数量")]
     public class AuditPlugIn : AbstractOperationServicePlugIn
     {
         public override void OnPreparePropertys(PreparePropertysEventArgs e)
         {
             base.OnPreparePropertys(e);
             // 包装单号
-            e.FieldKeys.Add("F_QSNC_PackageNum");
+            e.FieldKeys.Add("F_scfg_PackageCode");
 
             // 单据体对象
             e.FieldKeys.Add("FEntity");
@@ -60,7 +60,7 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                             foreach (DynamicObject obj1 in outEntry)
                             {
                                 //获取当前明细行包装单号
-                                String packageNo = Convert.ToString(obj1["F_QSNC_PackageNum"]);
+                                String packageNo = Convert.ToString(obj1["F_scfg_PackageCode"]);
                                 if (!String.IsNullOrWhiteSpace(packageNo))
                                 {
                                     // 获取当前明细行物料的id
@@ -71,14 +71,14 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                                         // 获取当前行的物料
                                         long materialId = Convert.ToInt64(materialObj["Id"]);
                                         // 获取当前物料的各个计量单位的重量
-                                        double m2Num = Convert.ToDouble(obj1["F_QSNC_M2Num"]);
-                                        double zhangNum = Convert.ToDouble(obj1["F_QSNC_ZhangNum"]);
-                                        double geNum = Convert.ToDouble(obj1["F_QSNC_GeNum"]);
-                                        double xiangNum = Convert.ToDouble(obj1["F_QSNC_XiangNum"]);
-                                        double jianNum = Convert.ToDouble(obj1["F_QSNC_JianNum"]);
+                                        double m2Num = Convert.ToDouble(obj1["F_scfg_M2Num"]);
+                                        double zhangNum = Convert.ToDouble(obj1["F_scfg_ZhangNum"]);
+                                        double geNum = Convert.ToDouble(obj1["F_scfg_GeNum"]);
+                                        double xiangNum = Convert.ToDouble(obj1["F_scfg_XiangNum"]);
+                                        double jianNum = Convert.ToDouble(obj1["F_scfg_JianNum"]);
 
                                         // 若包装单号不为空，则查找相同包装单号的条码拆装单
-                                        String tmpSQL1 = String.Format(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_QSNC_REALM2NUM = F_QSNC_REALM2NUM + {0}, F_QSNC_REALZHANGNUM = F_QSNC_REALZHANGNUM + {1}, F_QSNC_REALGENUM = F_QSNC_REALGENUM + {2}, F_QSNC_REALXIANGNUM = F_QSNC_REALXIANGNUM + {3}, F_QSNC_REALJIANNUM = F_QSNC_REALJIANNUM + {4} WHERE FID = (SELECT FID FROM t_UN_Packaging WHERE FPACKAGING = '{5}') AND FITEMID = {6} ", m2Num, zhangNum, geNum, xiangNum, jianNum, packageNo, materialId);
+                                        String tmpSQL1 = String.Format(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_SCFG_REALM2NUM = F_SCFG_REALM2NUM + {0}, F_SCFG_REALZHANGNUM = F_SCFG_REALZHANGNUM + {1}, F_SCFG_REALGENUM = F_SCFG_REALGENUM + {2}, F_SCFG_REALXIANGNUM = F_SCFG_REALXIANGNUM + {3}, F_SCFG_REALJIANNUM = F_SCFG_REALJIANNUM + {4} WHERE FID = (SELECT FID FROM t_UN_Packaging WHERE FPACKAGING = '{5}') AND FITEMID = {6} ", m2Num, zhangNum, geNum, xiangNum, jianNum, packageNo, materialId);
                                         DBUtils.Execute(this.Context, tmpSQL1.ToString());
                                     }
                                 }

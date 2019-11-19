@@ -34,7 +34,7 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                     long materialId = Convert.ToInt64(materialObj["Id"]);
 
                     // 获取当前物料的包装单号
-                    String packNo = Convert.ToString(col1[i]["F_QSNC_PackageNum"]);
+                    String packNo = Convert.ToString(col1[i]["F_scfg_PackageCode"]);
 
                     // 若不为空，则是进行打包的物料
                     if (!String.IsNullOrWhiteSpace(packNo))
@@ -48,11 +48,11 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                         if (col2 != null && col2.Count > 0)
                         {
                             // 将条码拆装单中的各个计量单位的数值赋值到销售出库单
-                            this.View.Model.SetValue("F_QSNC_M2NUM", col2[0]["F_QSNC_M2NUM"], i); // F_QSNC_M2NUM
-                            this.View.Model.SetValue("F_QSNC_ZHANGNUM", col2[0]["F_QSNC_ZHANGNUM"], i); // F_QSNC_ZHANGNUM
-                            this.View.Model.SetValue("F_QSNC_GENUM", col2[0]["F_QSNC_GENUM"], i); // F_QSNC_GENUM
-                            this.View.Model.SetValue("F_QSNC_XIANGNUM", col2[0]["F_QSNC_XIANGNUM"], i); // F_QSNC_XIANGNUM
-                            this.View.Model.SetValue("F_QSNC_JIANNUM", col2[0]["F_QSNC_JIANNUM"], i); // F_QSNC_JIANNUM
+                            this.View.Model.SetValue("F_SCFG_M2NUM", col2[0]["F_SCFG_M2NUM"], i);
+                            this.View.Model.SetValue("F_SCFG_ZHANGNUM", col2[0]["F_SCFG_ZHANGNUM"], i);
+                            this.View.Model.SetValue("F_SCFG_GENUM", col2[0]["F_SCFG_GENUM"], i);
+                            this.View.Model.SetValue("F_SCFG_XIANGNUM", col2[0]["F_SCFG_XIANGNUM"], i);
+                            this.View.Model.SetValue("F_SCFG_JIANNUM", col2[0]["F_SCFG_JIANNUM"], i);
                         }
                     }
                     else
@@ -81,19 +81,19 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                                 switch (Convert.ToString(obj2["FNAME"]))
                                 {
                                     case "平方米":
-                                        where = "F_QSNC_M2NUM";
+                                        where = "F_SCFG_M2NUM";
                                         break;
                                     case "张":
-                                        where = "F_QSNC_ZHANGNUM";
+                                        where = "F_SCFG_ZHANGNUM";
                                         break;
                                     case "个":
-                                        where = "F_QSNC_GENUM";
+                                        where = "F_SCFG_GENUM";
                                         break;
                                     case "箱":
-                                        where = "F_QSNC_XIANGNUM";
+                                        where = "F_SCFG_XIANGNUM";
                                         break;
                                     case "件":
-                                        where = "F_QSNC_JIANNUM";
+                                        where = "F_SCFG_JIANNUM";
                                         break;
                                     default:
                                         break;

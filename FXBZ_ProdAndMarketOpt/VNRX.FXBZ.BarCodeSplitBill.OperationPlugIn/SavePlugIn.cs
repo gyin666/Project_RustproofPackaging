@@ -32,7 +32,11 @@ namespace VNRX.FXBZ.BarCodeSplitBill.OperationPlugIn
         public override void OnPreparePropertys(PreparePropertysEventArgs e)
         {
             base.OnPreparePropertys(e);
+            // 条码拆装箱 中
+            // 明细行
             e.FieldKeys.Add("FEntity");
+            e.FieldKeys.Add("UN_PackagingEntry");
+            // 条形码
             e.FieldKeys.Add("FEntryBarCode");
         }
 
@@ -59,8 +63,9 @@ namespace VNRX.FXBZ.BarCodeSplitBill.OperationPlugIn
                                 // 获取当前明细行的内码
                                 long entryId = Convert.ToInt64(obj1["Id"]);
 
+                                // 赋值托数
                                 StringBuilder tmpSQL4 = new StringBuilder();
-                                tmpSQL4.AppendFormat(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_QSNC_TUONUM = {0} WHERE FENTRYID = {1} ", (1 / totalCount), entryId);
+                                tmpSQL4.AppendFormat(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_SCFG_TUONUM = {0} WHERE FENTRYID = {1} ", (1 / totalCount), entryId);
                                 DBUtils.Execute(this.Context, tmpSQL4.ToString());
 
                                 // 获取当前明细行物料的条形码，并根据条形码查询条码主档获取该物料的公斤数量
@@ -101,19 +106,19 @@ namespace VNRX.FXBZ.BarCodeSplitBill.OperationPlugIn
                                                 switch (Convert.ToString(obj2["FNAME"]))
                                                 {
                                                     case "平方米":
-                                                        where = "F_QSNC_M2NUM";
+                                                        where = "F_SCFG_M2NUM";
                                                         break;
                                                     case "张":
-                                                        where = "F_QSNC_ZHANGNUM";
+                                                        where = "F_SCFG_ZHANGNUM";
                                                         break;
                                                     case "个":
-                                                        where = "F_QSNC_GENUM";
+                                                        where = "F_SCFG_GENUM";
                                                         break;
                                                     case "箱":
-                                                        where = "F_QSNC_XIANGNUM";
+                                                        where = "F_SCFG_XIANGNUM";
                                                         break;
                                                     case "件":
-                                                        where = "F_QSNC_JIANNUM";
+                                                        where = "F_SCFG_JIANNUM";
                                                         break;
                                                     default:
                                                         break;
