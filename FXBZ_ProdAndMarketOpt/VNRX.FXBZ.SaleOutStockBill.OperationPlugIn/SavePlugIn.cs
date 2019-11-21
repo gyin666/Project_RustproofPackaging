@@ -33,14 +33,13 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                     // 获取当前物料的内码
                     long materialId = Convert.ToInt64(materialObj["Id"]);
 
-                    // 获取当前物料的包装单号
+                    // 获取当前物料的包装单号 
                     String packNo = Convert.ToString(col1[i]["F_scfg_PackageCode"]);
 
                     // 若不为空，则是进行打包的物料
                     if (!String.IsNullOrWhiteSpace(packNo))
                     {
                         // 根据包装单号查找对应的条码包装记录，将明细行中的各计量单位数量字段取出，赋值到销售出库单明细行，对应物料的对应数量字段
-                        
                         // 根据包装单号获取上游条码拆装单中该物料的信息
                         String tmpSQL1 = String.Format(@"/*dialect*/ SELECT * FROM t_UN_PackagingEntry PE LEFT JOIN t_UN_Packaging P ON PE.FID = P.FID WHERE P.FPACKAGING = '{0}' AND PE.FITEMID = {1} ", packNo, materialId);
                         DynamicObjectCollection col2 = DBUtils.ExecuteDynamicObject(this.Context, tmpSQL1);
