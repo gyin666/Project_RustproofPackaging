@@ -117,6 +117,11 @@ namespace GYIN.K3.FXBZ.PRODANDSALEOUTSTOCK.BaseDataSyncPlugIn
             }
             else if (this.FormOperation.Operation.Equals("UnAudit"))//反审核
             {
+                 if (getExsitOldData(Convert.ToString(obj["Number"])) != null)//判断辅助资料表是否有对应的老数据
+                {
+                    DynamicObject oo = getExsitOldData(Convert.ToString(obj["Number"]));
+                    updateAssistDataOld(Convert.ToString(oo["fentryid"]), Convert.ToString(obj["Number"]));//如果存在则把外键编码字段关联上
+                 }
                 updateAssistDataStatus(Convert.ToInt64(obj["Id"]), "D");
             }
             else if (this.FormOperation.Operation.Equals("Forbid"))//禁用
@@ -144,6 +149,29 @@ namespace GYIN.K3.FXBZ.PRODANDSALEOUTSTOCK.BaseDataSyncPlugIn
             }
             return flag;
         }
+
+        //获取辅助资料表对应的老数据对象
+        public DynamicObject getExsitOldData(string fnumber)
+        {
+            DynamicObject obj = null;
+            string strSQL = string.Format(@"/*dialect*/SELECT tbae.FID,tbae.fentryid,tbae.fnumber,tbael.FDATAVALUE,tbae.F_PAEZ_Number,tbae.FDOCUMENTSTATUS,tbae.FFORBIDSTATUS
+from T_BAS_ASSISTANTDATAENTRY tbae   --需要同步
+LEFT JOIN
+T_BAS_ASSISTANTDATAENTRY_L tbael     --需要同步
+ON tbae.fentryid=tbael.fentryid
+LEFT JOIN T_BAS_ASSISTANTDATA tba
+ON tba.fid=tbae.FID
+LEFT JOIN T_BAS_ASSISTANTDATA_L tbal
+ON tba.fid=tbal.fid
+WHERE tbal.fname='供应商'
+and tbae.fnumber='{0}'", fnumber);
+            DynamicObjectCollection supplyerObjectCol = DBUtils.ExecuteDynamicObject(this.Context, strSQL);
+            if (supplyerObjectCol != null && supplyerObjectCol.Count > 0)
+            {
+                obj = supplyerObjectCol[0];
+            }
+            return obj;
+        }
         //修改辅助资料数据
         public void updateAssistData(long id, string fnumber, string fname)
         {    
@@ -152,6 +180,31 @@ namespace GYIN.K3.FXBZ.PRODANDSALEOUTSTOCK.BaseDataSyncPlugIn
             string strSQL1 = string.Format("/*dialect*/UPDATE T_BAS_ASSISTANTDATAENTRY_L SET fdatavalue = '{0}' WHERE fentryid = (SELECT fentryid from T_BAS_ASSISTANTDATAENTRY WHERE F_PAEZ_Number='{1}')", fname, id);
             DBUtils.Execute(this.Context, strSQL1);
         }
+
+
+        //修改辅助资料历史数据，存入外键编码字段
+        public void updateAssistDataOld(string id, string fnumber)
+        {
+            string entryId = "";
+            string strSQL = string.Format(@"/*dialect*/SELECT tbs.fmasterid,tbs.FNUMBER,tbs.FSUPPLIERID,tbs.FUSEORGID,tbs.FCREATEORGID,tbsl.fname FROM T_BD_Supplier tbs
+LEFT JOIN T_BD_SUPPLIER_L tbsl
+ON tbs.fsupplierid=tbsl.fsupplierid
+WHERE tbs.FNUMBER='{0}'", fnumber);
+            DynamicObjectCollection supplyerObjectCol = DBUtils.ExecuteDynamicObject(this.Context, strSQL);
+            if (supplyerObjectCol != null && supplyerObjectCol.Count > 0)
+            {
+                entryId = Convert.ToString(supplyerObjectCol[0]["fmasterid"]);
+            }
+            string strSQL1 = string.Format("/*dialect*/UPDATE T_BAS_ASSISTANTDATAENTRY SET F_PAEZ_Number = '{0}' WHERE fentryid='{1}'", entryId, id);
+            DBUtils.Execute(this.Context, strSQL1);
+        }
+
+
+
+
+
+
+
         //修改辅助资料数据状态
         public void updateAssistDataStatus(long id, string status)
         {
