@@ -44,8 +44,7 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
             e.FieldKeys.Add("F_scfg_M2Num");
             e.FieldKeys.Add("F_scfg_ZhangNum");
             e.FieldKeys.Add("F_scfg_GeNum");
-            e.FieldKeys.Add("F_scfg_XiangNum");
-            e.FieldKeys.Add("F_scfg_JianNum");
+            e.FieldKeys.Add("F_scfg_MulNum");
         }
 
         public override void EndOperationTransaction(EndOperationTransactionArgs e)
@@ -77,15 +76,14 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                                         // 获取当前行的物料
                                         long materialId = Convert.ToInt64(materialObj["Id"]);
                                         // 获取当前物料的各个计量单位的重量
-                                        double realNUm = Convert.ToDouble(obj1["RealQty"]);
+                                        double realNum = Convert.ToDouble(obj1["RealQty"]);
                                         double m2Num = Convert.ToDouble(obj1["F_scfg_M2Num"]);
                                         double zhangNum = Convert.ToDouble(obj1["F_scfg_ZhangNum"]);
                                         double geNum = Convert.ToDouble(obj1["F_scfg_GeNum"]);
-                                        double xiangNum = Convert.ToDouble(obj1["F_scfg_XiangNum"]);
-                                        double jianNum = Convert.ToDouble(obj1["F_scfg_JianNum"]);
+                                        double mulNum = Convert.ToDouble(obj1["F_scfg_MulNum"]);
 
                                         // 若包装单号不为空，则查找相同包装单号的条码拆装单
-                                        String tmpSQL1 = String.Format(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_SCFG_REALM2NUM = F_SCFG_REALM2NUM + {0}, F_SCFG_REALZHANGNUM = F_SCFG_REALZHANGNUM + {1}, F_SCFG_REALGENUM = F_SCFG_REALGENUM + {2}, F_SCFG_REALXIANGNUM = F_SCFG_REALXIANGNUM + {3}, F_SCFG_REALJIANNUM = F_SCFG_REALJIANNUM + {4}, F_scfg_realOutQty = F_scfg_realOutQty + {7} WHERE FID = (SELECT FID FROM t_UN_Packaging WHERE FPACKAGING = '{5}') AND FITEMID = {6} ", m2Num, zhangNum, geNum, xiangNum, jianNum, packageNo, materialId, realNUm);
+                                        String tmpSQL1 = String.Format(@"/*dialect*/ UPDATE t_UN_PackagingEntry SET F_SCFG_REALM2NUM = F_SCFG_REALM2NUM + {0}, F_SCFG_REALZHANGNUM = F_SCFG_REALZHANGNUM + {1}, F_SCFG_REALGENUM = F_SCFG_REALGENUM + {2}, F_SCFG_REALMULNUM = F_SCFG_REALMULNUM + {3}, F_scfg_realOutQty = F_scfg_realOutQty + {6} WHERE FID = (SELECT FID FROM t_UN_Packaging WHERE FPACKAGING = '{4}') AND FITEMID = {5} ", m2Num, zhangNum, geNum, mulNum, packageNo, materialId, realNum);
                                         DBUtils.Execute(this.Context, tmpSQL1.ToString());
                                     }
                                 }
