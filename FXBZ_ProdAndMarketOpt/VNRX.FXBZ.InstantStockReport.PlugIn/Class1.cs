@@ -148,6 +148,14 @@ namespace VNRX.FXBZ.InstantStockReport.PlugIn
                 }
             }
 
+            // 显示小计
+            bool flag = false;
+            if (dyFilter["F_scfg_CheckBoxFilter"] != null && Convert.ToInt32(dyFilter["F_scfg_CheckBoxFilter"]) == 1)
+            {
+                flag = true;
+            }
+
+
             
             // 20191225 增加简单生产入库单 简单生产领料单
             // ---------------------------------------------------------------------------------------------------------------
@@ -299,12 +307,16 @@ namespace VNRX.FXBZ.InstantStockReport.PlugIn
             tmpSQL8.AppendFormat(@"/*dialect*/ SELECT SUM(STOCKQTY1) TOTALSTOCKQTY, SUM(M2NUM1) TOTALM2NUM, SUM(GENUM1) TOTALGENUM, SUM(ZHANGNUM1) TOTALZHANGNUM, SUM(MULNUM1) TOTALMULNUM INTO {0} FROM {1} ", tmpTable8, tmpTable6);
             DBUtils.ExecuteDynamicObject(this.Context, tmpSQL8.ToString());
 
-            // 将仓库小计斤系插入总表中
-            // ----------------------------------------------------------------------------------------------------------------------
-            StringBuilder tmpSQL9 = new StringBuilder();
-            tmpSQL9.AppendFormat(@"/*dialect*/ INSERT INTO {0} SELECT MATERIALNUMBER, MATERIALNAME, MATERIALSPECIFICATION, STOCKNUMBER, STOCKNAME + ' - 小计', '', '', '', TOTALSTOCKQTY, '', TOTALM2NUM, '', TOTALGENUM, '', TOTALZHANGNUM, '', TOTALMULNUM FROM {1} ", tmpTable6, tmpTable7);
-            DBUtils.ExecuteDynamicObject(this.Context, tmpSQL9.ToString());
 
+            if (flag)
+            {
+                // 将仓库小计斤系插入总表中
+                // ----------------------------------------------------------------------------------------------------------------------
+                StringBuilder tmpSQL9 = new StringBuilder();
+                tmpSQL9.AppendFormat(@"/*dialect*/ INSERT INTO {0} SELECT MATERIALNUMBER, MATERIALNAME, MATERIALSPECIFICATION, STOCKNUMBER, STOCKNAME + ' - 小计', '', '', '', TOTALSTOCKQTY, '', TOTALM2NUM, '', TOTALGENUM, '', TOTALZHANGNUM, '', TOTALMULNUM FROM {1} ", tmpTable6, tmpTable7);
+                DBUtils.ExecuteDynamicObject(this.Context, tmpSQL9.ToString());
+            }
+            
             // ----------------------------------------------------------------------------------------------------------------------
             StringBuilder tmpSQL11 = new StringBuilder();
             tmpSQL11.AppendFormat(@"/*dialect*/ INSERT INTO {0} SELECT '合计', '', '', '', '', '', '', '', TOTALSTOCKQTY, '', TOTALM2NUM, '', TOTALGENUM, '', TOTALZHANGNUM, '', TOTALMULNUM FROM {1} ", tmpTable6, tmpTable8);
