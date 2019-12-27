@@ -37,9 +37,9 @@ namespace GYIN.K3.FXBZ.PRODANDSALEOUTSTOCK.StaffMDStatPlugIn
             StringBuilder sql = new StringBuilder();
             sql.AppendFormat(@"/*dialect*/SELECT * INTO {0} ", tableName).Append("\n");
             sql.AppendLine(" FROM (").Append("\n");
-            sql.AppendLine(" SELECT ROW_NUMBER() OVER (ORDER BY 通知单号,通知单厂家) AS FSeq,").Append("\n");
-            sql = sql.AppendFormat(@"通知单号,通知单厂家,工序说明,型号规格,计划产量,交货日期,延长米,原纸规格,原纸数量,布板规格,布板数量,包材规格,包材数量,开始时间,结束时间,计划工时,包装方式,备注 
-FROM (SELECT tmp0.FMONUMBER 通知单号,tmp1.FCREATEDATE 创建日期,tmp0.FOPERDESCRIPTION 工序说明,tmp1.FMOBILLNO + '-' + CONVERT (CHAR, tmp1.khbm) 通知单厂家,tmp1.FSPECIFICATION 型号规格,tmp0.FOPERQTY 计划产量,tmp1.F_SCFG_DATETIME1 交货日期,tmp1.F_scfg_Qty1 延长米,tmp1.yzgg 原纸规格,tmp2.yzsl 原纸数量,tmp3.bbgg 布板规格,tmp4.bbsl 布板数量,tmp5.bcgg 包材规格,tmp6.bcsl 包材数量,NULL 开始时间,NULL 结束时间,NULL 计划工时,tmp1.fdatavalue 包装方式,NULL 备注
+            sql.AppendLine(" SELECT TOP 100 PERCENT ROW_NUMBER() OVER (ORDER BY 通知单号,通知单厂家) AS FSeq,").Append("\n");
+            sql = sql.AppendFormat(@"tmp.通知单号,tmp.通知单厂家,tmp.工序说明,tmp.生产车间,tmp.型号规格,tmp.计划产量,tmp.交货日期,tmp.延长米,tmp.原纸规格,tmp.原纸数量,tmp.布板规格,tmp.布板数量,tmp.包材规格,tmp.包材数量,tmp.开始时间,tmp.结束时间,tmp.计划工时,tmp.包装方式,tmp.备注 
+FROM (SELECT tmp0.FMONUMBER 通知单号,tmp1.FCREATEDATE 创建日期,tmp1.FNAME 生产车间,tmp0.FOPERDESCRIPTION 工序说明,tmp1.FMOBILLNO + '-' + CONVERT (CHAR, tmp1.khbm) 通知单厂家,tmp1.FSPECIFICATION 型号规格,tmp0.FOPERQTY 计划产量,tmp1.F_SCFG_DATETIME1 交货日期,tmp1.F_scfg_Qty1 延长米,tmp1.yzgg 原纸规格,tmp2.yzsl 原纸数量,tmp3.bbgg 布板规格,tmp4.bbsl 布板数量,tmp5.bcgg 包材规格,tmp6.bcsl 包材数量,NULL 开始时间,NULL 结束时间,NULL 计划工时,tmp1.fdatavalue 包装方式,NULL 备注
 FROM
 (
 SELECT a.FMONUMBER,a.FMOENTRYSEQ,cl.FOPERDESCRIPTION,FOPERQTY
@@ -54,7 +54,7 @@ WHERE 1=1
 INNER JOIN(
 --原纸规格
 		SELECT
-			tpp.FMOBILLNO,tbml0.FSPECIFICATION,tbml.FSPECIFICATION AS yzgg,CONVERT (CHAR, tbc.FNUMBER) khbm,tpp.F_SCFG_DATETIME1,tpp.F_scfg_Qty1,tbal.fdatavalue,tpp.FCREATEDATE
+			tpp.FMOBILLNO,tbml0.FSPECIFICATION,tpp.FWORKSHOPID,tpdl.FNAME,tbml.FSPECIFICATION AS yzgg,CONVERT (CHAR, tbc.FNUMBER) khbm,tpp.F_SCFG_DATETIME1,tpp.F_scfg_Qty1,tbal.fdatavalue,tpp.FCREATEDATE
 			FROM
 				T_PRD_PPBOM tpp
 			LEFT JOIN T_PRD_PPBOMENTRY tppe ON tpp.fid = tppe.fid
@@ -66,6 +66,8 @@ INNER JOIN(
       ON tbc.FCUSTID = tpp.F_SCFG_BASE
       LEFT JOIN T_BAS_ASSISTANTDATAENTRY_L tbal --辅助资料
       ON tpp.F_SCFG_ASSISTANT = tbal.fentryid
+      INNER JOIN T_BD_DEPARTMENT_L tpdl
+      ON tpp.FWORKSHOPID=tpdl.FDEPTID
 			WHERE
 				tbm.FNUMBER LIKE '01.01%' 
      --   and tpp.FMOBILLNO ='12105'
@@ -156,6 +158,11 @@ WHERE 1=1
                 string prodId = Convert.ToString(dyFilter["F_scfg_prodIdFilterStr"]);//生产通知单号
                 sql.AppendFormat(" and tmp0.FMONUMBER='{0}'", prodId);
             }
+            if (dyFilter["F_scfg_DeptIdFilter"] != null)
+            {
+                string deptId = Convert.ToString(dyFilter["F_scfg_DeptIdFilter_Id"]);//生产车间
+                sql.AppendFormat(" and tmp1.FWORKSHOPID='{0}'", deptId);
+            }
             //判断统计日期是否有效
             if (dyFilter["F_scfg_CreateDateFilter"] != null)
             {
@@ -165,7 +172,8 @@ WHERE 1=1
                 sql.AppendFormat(" AND tmp1.FCREATEDATE <= '{0}' ", createDateEnd);
             }
             sql.AppendLine(") tmp");
-          //  sql.AppendLine(" ORDER BY tmp.通知单号,tmp.通知单厂家 DESC");
+            sql.AppendLine(" ORDER BY tmp.通知单号,tmp.通知单厂家 DESC");
+            sql.AppendLine(") A");
             DBUtils.Execute(this.Context, sql.ToString());
         }
         //构建报表列
@@ -180,54 +188,57 @@ WHERE 1=1
             var gxsm = header.AddChild("工序说明", new Kingdee.BOS.LocaleValue("工序说明"));
             gxsm.ColIndex = 1;
 
+            //生产车间
+            var sccj = header.AddChild("生产车间", new Kingdee.BOS.LocaleValue("生产车间"));
+            sccj.ColIndex = 2;
+
             //型号规格
             var xhgg = header.AddChild("型号规格", new Kingdee.BOS.LocaleValue("型号规格"));
-            xhgg.ColIndex = 2;
+            xhgg.ColIndex = 3;
 
             //计划产量
             var quota = header.AddChild("计划产量", new Kingdee.BOS.LocaleValue("计划产量"));
-            quota.ColIndex = 3;
+            quota.ColIndex = 4;
 
             //交货日期
             var jhrq = header.AddChild("交货日期", new Kingdee.BOS.LocaleValue("交货日期"));
-            jhrq.ColIndex = 4;
+            jhrq.ColIndex = 5;
             //延长米
             var ycm = header.AddChild("延长米", new Kingdee.BOS.LocaleValue("延长米"));
-            ycm.ColIndex = 5;
+            ycm.ColIndex = 6;
             //原纸规格
             var yzgg = header.AddChild("原纸规格", new Kingdee.BOS.LocaleValue("原纸规格"));
-            yzgg.ColIndex = 6;
+            yzgg.ColIndex = 7;
             //原纸数量
             var yzsl = header.AddChild("原纸数量", new Kingdee.BOS.LocaleValue("原纸数量"));
-            yzsl.ColIndex = 7;
-            return header;
+            yzsl.ColIndex = 8;
             //布板规格
             var bbgg = header.AddChild("布板规格", new Kingdee.BOS.LocaleValue("布板规格"));
-            bbgg.ColIndex = 8;
+            bbgg.ColIndex = 9;
             //布板数量
             var bbsl = header.AddChild("布板数量", new Kingdee.BOS.LocaleValue("布板数量"));
-            bbsl.ColIndex = 9;
+            bbsl.ColIndex = 10;
             //包材规格
             var bcgg = header.AddChild("包材规格", new Kingdee.BOS.LocaleValue("包材规格"));
-            bcgg.ColIndex = 10;
+            bcgg.ColIndex = 11;
             //包材数量
             var bcsl = header.AddChild("包材数量", new Kingdee.BOS.LocaleValue("包材数量"));
-            bcsl.ColIndex = 11;
+            bcsl.ColIndex = 12;
             //开始时间
             var kssj = header.AddChild("开始时间", new Kingdee.BOS.LocaleValue("开始时间"));
-            kssj.ColIndex = 12;
+            kssj.ColIndex = 13;
             //结束时间
             var jssj = header.AddChild("结束时间", new Kingdee.BOS.LocaleValue("结束时间"));
-            jssj.ColIndex = 13;
+            jssj.ColIndex = 14;
               //计划工时
             var jhgs = header.AddChild("计划工时", new Kingdee.BOS.LocaleValue("计划工时"));
-            jhgs.ColIndex = 14;
+            jhgs.ColIndex = 15;
             //包装方式
             var bzfs = header.AddChild("包装方式", new Kingdee.BOS.LocaleValue("包装方式"));
-            bzfs.ColIndex = 15;
+            bzfs.ColIndex = 16;
             //备注
             var bz = header.AddChild("备注", new Kingdee.BOS.LocaleValue("备注"));
-            bz.ColIndex = 16;
+            bz.ColIndex = 17;
             return header;
         }
 
@@ -251,6 +262,17 @@ WHERE 1=1
                 else
                 {
                     result.AddTitle("F_scfg_prodId", "全部");
+                }
+
+                //反写过滤条件
+                if (dyFilter["F_scfg_DeptIdFilter"] != null)
+                {
+                    DynamicObject deptObj = (DynamicObject)dyFilter["F_scfg_DeptIdFilter"];
+                    result.AddTitle("F_scfg_Dept", Convert.ToString(deptObj["Name"]));
+                }
+                else
+                {
+                    result.AddTitle("F_scfg_Dept", "全部");
                 }
                 if (dyFilter["F_scfg_CreateDateFilter"] != null)
                 {
