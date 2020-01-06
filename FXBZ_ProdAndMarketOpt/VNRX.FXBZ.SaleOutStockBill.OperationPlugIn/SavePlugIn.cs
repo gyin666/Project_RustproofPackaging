@@ -36,6 +36,7 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
 
                     // 获取当前物料行的销售订单单号
                     String saleBillNo = Convert.ToString(col1[i]["SoorDerno"]);
+                 
                     // 通过该销售订单单号获取生产入库单中该物料的全部的入库重量
                     StringBuilder tmpSQL0 = new StringBuilder();
                     tmpSQL0.AppendFormat(@"/*dialect*/ SELECT SUM(E.FREALQTY) INNUM,
@@ -109,8 +110,10 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
 
                             // 根据物料条码查找条码主档中的数量字段得到公斤数，根据动态换算关系计算5个计量单位的数量，并赋值到各个字段上
                             StringBuilder tmpSQL2 = new StringBuilder();
-                            tmpSQL2.AppendFormat(@"/*dialect*/ SELECT * FROM T_scfg_MaterialConvert MC LEFT JOIN T_BD_UNIT_L UL ON UL.FUNITID = MC.FUNITID WHERE MC.FMATERIALNUMBER = '{0}' ", materialId);
+                            tmpSQL2.AppendFormat(@"/*dialect*/ SELECT * FROM T_scfg_MaterialConvert MC LEFT JOIN T_BD_UNIT_L UL ON UL.FUNITID = MC.FUNITID WHERE MC.FMATERIALNUMBER = '{0}' AND F_SCFG_LOTNO = '{1}' ", materialId, saleBillNo);//批号  对应简单生产入库的出库
+                      
                             DynamicObjectCollection col2 = DBUtils.ExecuteDynamicObject(this.Context, tmpSQL2.ToString());
+                      
                             if (col2 != null && col2.Count > 0)
                             {
                                 // 遍历当前物料的标准称重单位（公斤）与其他称重单位的转换参数

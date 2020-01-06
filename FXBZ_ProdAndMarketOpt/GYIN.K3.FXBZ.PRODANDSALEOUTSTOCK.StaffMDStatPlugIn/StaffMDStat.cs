@@ -38,8 +38,8 @@ namespace GYIN.K3.FXBZ.PRODANDSALEOUTSTOCK.StaffMDStatPlugIn
             sql.AppendFormat(@"/*dialect*/SELECT * INTO {0} ", tableName).Append("\n");
             sql.AppendLine(" FROM (").Append("\n");
             sql.AppendLine(" SELECT TOP 100 PERCENT ROW_NUMBER() OVER (ORDER BY 通知单号,通知单厂家) AS FSeq,").Append("\n");
-            sql = sql.AppendFormat(@"tmp.通知单号,tmp.通知单厂家,tmp.工序说明,tmp.生产车间,tmp.型号规格,tmp.计划产量,tmp.交货日期,tmp.延长米,tmp.原纸规格,tmp.原纸数量,tmp.布板规格,tmp.布板数量,tmp.包材规格,tmp.包材数量,tmp.开始时间,tmp.结束时间,tmp.计划工时,tmp.包装方式,tmp.备注 
-FROM (SELECT tmp0.FMONUMBER 通知单号,tmp1.FCREATEDATE 创建日期,tmp1.FNAME 生产车间,tmp0.FOPERDESCRIPTION 工序说明,tmp1.FMOBILLNO + '-' + CONVERT (CHAR, tmp1.khbm) 通知单厂家,tmp1.FSPECIFICATION 型号规格,tmp0.FOPERQTY 计划产量,tmp1.F_SCFG_DATETIME1 交货日期,tmp1.F_scfg_Qty1 延长米,tmp1.yzgg 原纸规格,tmp2.yzsl 原纸数量,tmp3.bbgg 布板规格,tmp4.bbsl 布板数量,tmp5.bcgg 包材规格,tmp6.bcsl 包材数量,NULL 开始时间,NULL 结束时间,NULL 计划工时,tmp1.fdatavalue 包装方式,NULL 备注
+            sql = sql.AppendFormat(@"tmp.通知单号,tmp.通知单厂家,tmp.工序说明,tmp.生产车间,tmp.型号规格,tmp.计划产量,tmp.交货日期,tmp.延长米,tmp.子物料名称,tmp.原纸规格,tmp.原纸数量,tmp.布板规格,tmp.布板数量,tmp.包材规格,tmp.包材数量,tmp.开始时间,tmp.结束时间,tmp.计划工时,tmp.包装方式,tmp.备注 
+FROM (SELECT tmp0.FMONUMBER 通知单号,tmp1.FCREATEDATE 创建日期,tmp1.FNAME 生产车间,tmp0.FOPERDESCRIPTION 工序说明,tmp1.FMOBILLNO + '-' + CONVERT (CHAR, tmp1.khbm) 通知单厂家,tmp1.FSPECIFICATION 型号规格,tmp0.FOPERQTY 计划产量,tmp1.F_SCFG_DATETIME1 交货日期,tmp1.F_scfg_Qty1 延长米,tmp1.wlbm 子物料编码,tmp1.wlmc 子物料名称,tmp1.yzgg 原纸规格,tmp2.yzsl 原纸数量,tmp3.bbgg 布板规格,tmp4.bbsl 布板数量,tmp5.bcgg 包材规格,tmp6.bcsl 包材数量,NULL 开始时间,NULL 结束时间,NULL 计划工时,tmp1.fdatavalue 包装方式,NULL 备注
 FROM
 (
 SELECT a.FMONUMBER,a.FMOENTRYSEQ,cl.FOPERDESCRIPTION,FOPERQTY
@@ -54,7 +54,7 @@ WHERE 1=1
 INNER JOIN(
 --原纸规格
 		SELECT
-			tpp.FMOBILLNO,tbml0.FSPECIFICATION,tpp.FWORKSHOPID,tpdl.FNAME,tbml.FSPECIFICATION AS yzgg,CONVERT (CHAR, tbc.FNUMBER) khbm,tpp.F_SCFG_DATETIME1,tpp.F_scfg_Qty1,tbal.fdatavalue,tpp.FCREATEDATE
+			tpp.FMOBILLNO,tbml0.FSPECIFICATION,tpp.FWORKSHOPID,tpdl.FNAME,tbm.FNUMBER wlbm,tbml.FNAME wlmc,tbml.FSPECIFICATION AS yzgg,CONVERT (CHAR, tbc.FNUMBER) khbm,tpp.F_SCFG_DATETIME1,tpp.F_scfg_Qty1,tbal.fdatavalue,tpp.FCREATEDATE
 			FROM
 				T_PRD_PPBOM tpp
 			LEFT JOIN T_PRD_PPBOMENTRY tppe ON tpp.fid = tppe.fid
@@ -206,39 +206,42 @@ WHERE 1=1
             //延长米
             var ycm = header.AddChild("延长米", new Kingdee.BOS.LocaleValue("延长米"));
             ycm.ColIndex = 6;
+            //子物料名称
+            var zwlmc = header.AddChild("子物料名称", new Kingdee.BOS.LocaleValue("子物料名称"));
+            zwlmc.ColIndex = 7;
             //原纸规格
             var yzgg = header.AddChild("原纸规格", new Kingdee.BOS.LocaleValue("原纸规格"));
-            yzgg.ColIndex = 7;
+            yzgg.ColIndex = 8;
             //原纸数量
             var yzsl = header.AddChild("原纸数量", new Kingdee.BOS.LocaleValue("原纸数量"));
-            yzsl.ColIndex = 8;
+            yzsl.ColIndex = 9;
             //布板规格
             var bbgg = header.AddChild("布板规格", new Kingdee.BOS.LocaleValue("布板规格"));
-            bbgg.ColIndex = 9;
+            bbgg.ColIndex = 10;
             //布板数量
             var bbsl = header.AddChild("布板数量", new Kingdee.BOS.LocaleValue("布板数量"));
-            bbsl.ColIndex = 10;
+            bbsl.ColIndex = 11;
             //包材规格
             var bcgg = header.AddChild("包材规格", new Kingdee.BOS.LocaleValue("包材规格"));
-            bcgg.ColIndex = 11;
+            bcgg.ColIndex = 12;
             //包材数量
             var bcsl = header.AddChild("包材数量", new Kingdee.BOS.LocaleValue("包材数量"));
-            bcsl.ColIndex = 12;
+            bcsl.ColIndex = 13;
             //开始时间
             var kssj = header.AddChild("开始时间", new Kingdee.BOS.LocaleValue("开始时间"));
-            kssj.ColIndex = 13;
+            kssj.ColIndex = 14;
             //结束时间
             var jssj = header.AddChild("结束时间", new Kingdee.BOS.LocaleValue("结束时间"));
-            jssj.ColIndex = 14;
+            jssj.ColIndex = 15;
               //计划工时
             var jhgs = header.AddChild("计划工时", new Kingdee.BOS.LocaleValue("计划工时"));
-            jhgs.ColIndex = 15;
+            jhgs.ColIndex = 16;
             //包装方式
             var bzfs = header.AddChild("包装方式", new Kingdee.BOS.LocaleValue("包装方式"));
-            bzfs.ColIndex = 16;
+            bzfs.ColIndex = 17;
             //备注
             var bz = header.AddChild("备注", new Kingdee.BOS.LocaleValue("备注"));
-            bz.ColIndex = 17;
+            bz.ColIndex = 18;
             return header;
         }
 
