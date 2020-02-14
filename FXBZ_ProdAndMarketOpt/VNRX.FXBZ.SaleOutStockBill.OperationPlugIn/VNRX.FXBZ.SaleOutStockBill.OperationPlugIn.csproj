@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SavePlugInNew.cs" />
     <Compile Include="SavePlugIn.cs" />
     <Compile Include="SetValuePlugIn.cs" />
   </ItemGroup>
