@@ -72,8 +72,9 @@ namespace VNRX.FXBZ.ProInStock.PlugIn
                                     double xjjWeight = Convert.ToDouble(obj["F_scfg_MulNum"]);
                                     if (realInWeight != 0)
                                     {
-                                        if (m2Weight != 0)
-                                        {
+                                        // 此处注释掉原因：实际的业务场景中会有部分多计量单位不填写的情况，即多计量数量为0
+                                        //if (m2Weight != 0)
+                                        //{
                                             double m2Rate = m2Weight / realInWeight;
                                             if (convertIsExist(lotNo, materialId, "平方米"))
                                             {
@@ -85,10 +86,10 @@ namespace VNRX.FXBZ.ProInStock.PlugIn
                                                 // 不存在，则建立
                                                 createNewConvertBill(lotNo, materialId, "平方米", m2Rate);
                                             }
-                                        }
+                                        //}
 
-                                        if (zhangWeight != 0)
-                                        {
+                                        //if (zhangWeight != 0)
+                                        //{
                                             double zhangRate = zhangWeight / realInWeight;
                                             if (convertIsExist(lotNo, materialId, "张"))
                                             {
@@ -100,10 +101,10 @@ namespace VNRX.FXBZ.ProInStock.PlugIn
                                                 // 不存在，则建立
                                                 createNewConvertBill(lotNo, materialId, "张", zhangRate);
                                             }
-                                        }
+                                        //}
 
-                                        if (geWeight != 0)
-                                        {
+                                        //if (geWeight != 0)
+                                        //{
                                             double geRate = geWeight / realInWeight;
                                             if (convertIsExist(lotNo, materialId, "个"))
                                             {
@@ -115,9 +116,9 @@ namespace VNRX.FXBZ.ProInStock.PlugIn
                                                 // 不存在，则建立
                                                 createNewConvertBill(lotNo, materialId, "个", geRate);
                                             }
-                                        }
-                                        if (xjjWeight != 0)
-                                        {
+                                        //}
+                                        //if (xjjWeight != 0)
+                                        //{
                                             double xjjRate = xjjWeight / realInWeight;
                                             if (convertIsExist(lotNo, materialId, "箱"))
                                             {
@@ -129,7 +130,7 @@ namespace VNRX.FXBZ.ProInStock.PlugIn
                                                 // 不存在，则建立
                                                 createNewConvertBill(lotNo, materialId, "箱", xjjRate);
                                             }
-                                        }
+                                        //}
                                     }
                                 }
                             }
