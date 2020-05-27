@@ -58,6 +58,10 @@ AND E.FMATERIALID = '{1}'", lotNo, materialId);
                         // 该物料的全部实际入库重量
                         double realInWeight = Convert.ToDouble(col0[0]["INNUM"]); // 该物料全部已入库的数量
 
+                        // 获取当前物料行的订单单号
+                        String saleBillNo = Convert.ToString(col0[0]["SoorDerno"]);
+
+
                         // 查询该物料历史出库总数量
                         StringBuilder querySQL0 = new StringBuilder();
                         querySQL0.AppendFormat(@"/*dialect*/ SELECT SUM(FREALQTY) OUTNUM,
