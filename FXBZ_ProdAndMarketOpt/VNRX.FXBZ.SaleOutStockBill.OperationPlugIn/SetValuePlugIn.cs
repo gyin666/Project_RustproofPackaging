@@ -72,7 +72,7 @@ namespace VNRX.FXBZ.SaleOutStockBill.OperationPlugIn
                                             break;
                                         case "箱":
                                         where = "F_SCFG_MULNUM";
-                                    key = "MULNUM";
+                                        key = "MULNUM";
                                     break;
                                 default:
                                             break;

@@ -11,7 +11,6 @@ using GYIN.K3.FXBZ.PROCANDSALEOUTSTOCK.App;
 using GYIN.K3.FXBZ.PROCANDSALEOUTSTOCK.ServiceHelper;
 using Kingdee.BOS.Core.Bill;
 using Kingdee.BOS.Core.Metadata;
-using Kingdee.BOS.ServiceHelper;
 using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.Metadata.FormElement;
 using Kingdee.BOS.Orm;
@@ -96,7 +95,7 @@ namespace GYIN.K3.FXBZ.PRODANDSALEOUTSTOCK.BaseDataSyncPlugIn
             IOperationResult auditResult = null;
             if (this.FormOperation.Operation.Equals("Save"))//保存
             {
-                if (isExsit(Convert.ToInt64(obj["Id"])))【
+                if (isExsit(Convert.ToInt64(obj["Id"])))
                 {
                     updateAssistData(Convert.ToInt64(obj["Id"]), Convert.ToString(obj["Number"]), Convert.ToString(obj["Name"]));  //存在则修改
                 }
